@@ -41,9 +41,19 @@ def ghost_color(name, mode):
     return None
 
 
+FLASH = {"text": "", "until": 0}
+
+
 def on_pellet_eaten(score, pellets_left):
-    """Called after every pellet is eaten; add sound, flashes, or bonus fruit here."""
-    pass
+    """Called after every pellet is eaten; flashes a HUD message at milestones."""
+    if pellets_left == 0:
+        text = "ALL CLEAR!"
+    elif pellets_left in (120, 100, 50, 20, 10):
+        text = f"{pellets_left} LEFT!"
+    else:
+        return
+    FLASH["text"] = text
+    FLASH["until"] = pygame.time.get_ticks() + 1500
 
 
 def bonus_life_threshold():
@@ -249,6 +259,9 @@ class Game:
                 pygame.draw.circle(screen, (255, 255, 255), (gx + 4, gy - 4), 3)
         hud = font.render(f"Score {self.score}   Lives {self.lives}   R = reset", True, (240, 240, 240))
         screen.blit(hud, (8, ROWS * TILE + 6))
+        if pygame.time.get_ticks() < FLASH["until"]:
+            flash = font.render(FLASH["text"], True, (255, 255, 120))
+            screen.blit(flash, flash.get_rect(midright=(W - 8, ROWS * TILE + 16)))
         if self.state != "play":
             text = "YOU WIN! Press R" if self.state == "win" else "GAME OVER - Press R"
             label = font.render(text, True, (255, 255, 120))
